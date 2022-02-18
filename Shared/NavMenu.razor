@@ -1,0 +1,112 @@
+﻿@using Microsoft.AspNetCore.Http
+
+@inject IHttpContextAccessor httpContextAccessor
+
+<div class="top-row pl-4 navbar navbar-dark">
+    <a class="navbar-brand" href="">Spotifo</a>
+    <button class="navbar-toggler" @onclick="ToggleNavMenu">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+</div>
+
+<div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
+    <ul class="nav flex-column">
+        @if (httpContextAccessor.HttpContext.User.Identity.Name == null)
+        {
+            <li class="nav-item px-3">
+                <NavLink class="nav-link" href="/identity/account/login" Match="NavLinkMatch.All">
+                    <span class="oi oi-lock-locked" aria-hidden="true"></span> Iniciar Sesión
+                </NavLink>
+            </li>
+            <li class="nav-item px-3">
+                <NavLink class="nav-link" href="/identity/account/register" Match="NavLinkMatch.All">
+                    <span class="oi oi-lock-locked" aria-hidden="true"></span> Registro
+                </NavLink>
+            </li>
+            <li class="nav-item px-3">
+                <NavLink class="nav-link" href="/Filtros/Filtros1" Match="NavLinkMatch.All">
+                    <span class="oi oi-list-rich" aria-hidden="true"></span> Búsqueda
+                </NavLink>
+            </li>
+            <li class="nav-item px-3">
+                <NavLink class="nav-link" href="/ListaAleatoria" Match="NavLinkMatch.All">
+                    <span class="oi oi-list-rich" aria-hidden="true"></span> Generar lista aleatoría
+                </NavLink>
+            </li>
+            <li class="nav-item px-3">
+                <NavLink class="nav-link" href="/CancionesFamosas" Match="NavLinkMatch.All">
+                    <span class="oi oi-list-rich" aria-hidden="true"></span> Canciones más famosas
+                </NavLink>
+            </li>
+        }
+        else
+        {
+
+            <li class="nav-item px-3">
+                <NavLink class="nav-link" href="CancionAdd">
+                    <span class="oi oi-list-rich" aria-hidden="true"></span> Añadir canción
+                </NavLink>
+            </li>
+            <li class="nav-item px-3">
+                <NavLink class="nav-link" href="AlbumAdd">
+                    <span class="oi oi-list-rich" aria-hidden="true"></span> Añadir album
+                </NavLink>
+            </li>
+            <p></p>
+            <li class="nav-item px-3">
+                <a href="PerfilUsuario/@httpContextAccessor.HttpContext.User.Identity.Name/perfil">
+                    Lista de canciones y albumes personales
+                </a>
+            </li>
+            <p></p>
+            <li class="nav-item px-3">
+                <NavLink class="nav-link" href="/Filtros/Filtros1" Match="NavLinkMatch.All">
+                    <span class="oi oi-list-rich" aria-hidden="true"></span> Búsqueda
+                </NavLink>
+            </li>
+            <li class="nav-item px-3">
+                <NavLink class="nav-link" href="/ListaAleatoria" Match="NavLinkMatch.All">
+                    <span class="oi oi-list-rich" aria-hidden="true"></span> Generar lista aleatoría
+                </NavLink>
+            </li>
+            <li class="nav-item px-3">
+                <NavLink class="nav-link" href="/CancionesFavoritos" Match="NavLinkMatch.All">
+                    <span class="oi oi-list-rich" aria-hidden="true"></span> Mis canciones favoritas
+                </NavLink>
+            </li>
+            <li class="nav-item px-3">
+                <NavLink class="nav-link" href="/AlbumnesFavoritos" Match="NavLinkMatch.All">
+                    <span class="oi oi-list-rich" aria-hidden="true"></span> Mis albumnes favoritos
+                </NavLink>
+            </li>
+            <li class="nav-item px-3">
+                <NavLink class="nav-link" href="/CancionesFamosas" Match="NavLinkMatch.All">
+                    <span class="oi oi-list-rich" aria-hidden="true"></span> Canciones más famosas
+                </NavLink>
+            </li>
+            <li class="nav-item px-3">
+                <NavLink class="nav-link" href="/CancionesRecientes" Match="NavLinkMatch.All">
+                    <span class="oi oi-list-rich" aria-hidden="true"></span> Canciones recientes
+                </NavLink>
+            </li>
+        }
+        @if(httpContextAccessor.HttpContext.User.Identity.Name == "admin@gmail.com"){
+            <li class="nav-item px-3">
+                <NavLink class="nav-link" href="EliminarUsuarios">
+                    <span class="oi oi-list-rich" aria-hidden="true"></span> Eliminar Usuarios
+                </NavLink>
+            </li>
+        }
+    </ul>
+</div>
+
+@code {
+    private bool collapseNavMenu = true;
+
+    private string NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+}

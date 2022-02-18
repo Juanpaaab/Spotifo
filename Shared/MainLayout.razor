@@ -1,0 +1,53 @@
+﻿@using Microsoft.AspNetCore.Http
+
+@inject IHttpContextAccessor httpContextAccessor
+
+@inherits LayoutComponentBase
+
+@using Spotifo.Data.Model
+@using Spotifo.Data.Service
+
+@inject ICancionService CancionService
+@inject ICancionService ICancionService
+
+@if (httpContextAccessor.HttpContext.User.Identity.Name == null)
+{
+    <div class="page">
+        <div class="sidebar">
+            <NavMenu />
+        </div>
+        <div class="main">
+            <div class="top-row px-4">
+                <a href="Identity/Account/Register" target="_blank">Registro</a>
+            </div>
+            <div class="top-row px-4">
+                <a href="Identity/Account/Login" target="_blank">Iniciar Sesión</a>
+            </div>
+            <div class="content px-4">
+                @Body
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="page">
+        <div class="sidebar">
+            <NavMenu />
+        </div>
+        <div class="main">
+            <div class="top-row px-4">
+                <a id="manage" class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">¡Hola @httpContextAccessor.HttpContext.User.Identity.Name!</a>
+            </div>
+            <div class="top-row px-4">
+                <a href="Identity/Account/Logout" target="_blank">Cerrar Sesión</a>
+            </div>
+            <div class="content px-4">
+                @Body
+            </div>
+        </div>
+    </div>
+}
+@code {
+
+}
