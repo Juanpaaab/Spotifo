@@ -1,0 +1,61 @@
+﻿@page "/Register"
+
+@using Spotifo.Data.Model
+@using Spotifo.Data.Service
+
+@inject IUsuarioService IUsuarioService
+@inject NavigationManager NavigationManager
+
+
+<h1>Registro</h1>
+
+<EditForm Model="@usuario" OnValidSubmit="@UsuarioInsert">
+    <table>
+        <tr>
+            <td>Nombre:</td>
+            <td><input type="text" @bind="usuario.Nombre_usuario"/></td>
+        </tr>
+        <tr>
+            <td>Apellido:</td>
+            <td><input type="text" @bind="usuario.Apellido_usuario"/></td>
+        </tr>
+        <tr>
+            <td>Email:</td>
+            <td><input type="email" @bind="usuario.Email"/></td>
+        </tr>
+        <tr>
+            <td>Contraseña:</td>
+            <td><input type="password" @bind="usuario.Password"/></td>
+        </tr>
+        <tr>
+            <td>Descripción:</td>
+            <td><input type="text" @bind="usuario.Descripcion"/></td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <input type="submit" value="Registrar" />
+                <input type="button" value="Cancelar" @onclick="@Cancel" />
+            </td>
+        </tr>
+
+    </table>
+
+</EditForm>
+
+
+@code {
+
+    Usuario usuario = new Usuario();
+
+    protected async Task UsuarioInsert()
+    {
+        await IUsuarioService.UsuarioInsert(usuario);
+
+        NavigationManager.NavigateTo("/Login");
+    }
+
+    void Cancel()
+    {
+        NavigationManager.NavigateTo("/");
+    }
+}

@@ -1,0 +1,33 @@
+@page "/Filtros/Filtros1"
+@inject NavigationManager NavigationManager
+
+<button @onclick="@Filtro1" class="btn btn-primary">Filtro por Nacionalidad</button>
+<button @onclick="@Filtro2" class="btn btn-primary">Filtro de Canciones</button>
+<button @onclick="@Filtro6" class="btn btn-primary">Filtro de Canciones por Decadas</button>
+<button @onclick="@Filtro3" class="btn btn-primary">Filtro de Albumnes</button>
+<button @onclick="@Filtro4" class="btn btn-primary">Estadísticas de Canciones por Artista</button>
+<button @onclick="@Filtro5" class="btn btn-primary">Estadísticas de Albumnes por Artista</button>
+
+@code{
+    protected void Filtro1() {
+        NavigationManager.NavigateTo("/Filtros/FiltrosUsuarios");
+    }
+    protected void Filtro2() {
+        NavigationManager.NavigateTo("/Filtros/FiltrosCanciones");
+    }
+    protected void Filtro3() {
+        NavigationManager.NavigateTo("/Filtros/FiltrosAlbumnes");
+    }
+
+    protected void Filtro4() {
+        NavigationManager.NavigateTo("/Filtros/Estadisticas");
+    }
+
+    protected void Filtro5() {
+        NavigationManager.NavigateTo("/Filtros/EstadisticasAlbumnes");
+    }
+
+    protected void Filtro6() {
+        NavigationManager.NavigateTo("/Filtros/FiltroAñoCanciones");
+    }
+}

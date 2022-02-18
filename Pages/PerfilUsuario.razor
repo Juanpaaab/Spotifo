@@ -1,0 +1,104 @@
+﻿@page "/PerfilUsuario/"
+@page "/PerfilUsuario/{_email}/perfil"
+
+
+@using Spotifo.Data.Model
+@using Spotifo.Data.Service
+
+@inject IUsuarioService UsuarioService
+@inject IUsuarioService IUsuarioService
+@inject ICancionService CancionService
+@inject ICancionService ICancionService
+@inject IAlbumService AlbumService
+@inject IAlbumService IAlbumService
+
+<h1>Perfil</h1>
+
+<h3>Datos</h3>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">Nombre del artista</th>
+        </tr>
+    </thead>
+    <tr>
+        <td>@usuario.Nombre_usuario</td>
+    </tr>
+</table>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">Nombre Cancion</th>
+            <th scope="col">Género Canción</th>
+            <th scope="col">Fecha publicación</th>
+        </tr>
+    </thead>
+    @if (canciones == null)
+    {
+
+    }
+    else
+    {
+        @foreach (var song in canciones)
+        {
+            <tbody>
+                <tr>
+                    <td>@song.Nombre_cancion</td>
+                    <td>@song.Nombre_Genero</td>
+                    <td>@song.Fecha_publicacion_cancion</td>
+                    <td><a href='CancionDescripcion/@song.ID_cancion'>Editar</a></td>
+                </tr>
+            </tbody>
+        }
+    }
+</table>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">Titulo del Album</th>
+            <th scope="col">Género del Album</th>
+            <th scope="col">Fecha publicación</th>
+        </tr>
+    </thead>
+    @if (albumes == null)
+    {
+
+    }
+    else
+    {
+        @foreach (var albums in albumes)
+        {
+            <tbody>
+                <tr>
+                    <td>@albums.Titulo_album</td>
+                    <td>@albums.Nombre_Genero</td>
+                    <td>@albums.Fecha_publicacion_album</td>
+                    <td><a href='AlbumDescripcion/@albums.ID_album'>Editar</a></td>
+                </tr>
+            </tbody>
+        }
+    }
+</table>
+@code {
+
+    [Parameter]
+    public string _email { get; set; }
+
+    IEnumerable<Cancion> canciones;
+    IEnumerable<Album> albumes;
+
+    Cancion cancion = new Cancion();
+    Usuario usuario = new Usuario();
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        usuario = await UsuarioService.UsuarioDetails(_email);
+        canciones = await CancionService.CancionListPersonal();
+        albumes = await AlbumService.AlbumListPersonal();
+    }
+
+}

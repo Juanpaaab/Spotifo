@@ -1,0 +1,66 @@
+@page "/AlbumnesFavoritos"
+
+@using Spotifo.Data.Model
+@using Spotifo.Data.Service
+@using System.IO
+@using Microsoft.AspNetCore.Http
+@using Spotifo.Pages.Filtros
+
+@inject IAlbumService IAlbumService
+@inject IFavoritosAlbumService IFavoritosAlbumService
+@inject NavigationManager NavigationManager
+
+<h1>Mis albumnes favoritos</h1>
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">Nombre del album</th>
+            <th scope="col">Género del album</th>
+            <th scope="col">Fecha de publicación</th>
+            <th scope="col">Cantidad de me gustas</th>
+        </tr>
+    </thead>
+    @if (albumnes != null)
+    {
+        @foreach (var albums in albumnes)
+        {
+            <tbody>
+                <tr>
+                    <a href="AlbumDescripcionGeneral/@albums.ID_album" target="_blank" ><td>@albums.Titulo_album</td></a>
+                    <td>@albums.Nombre_Genero</td>
+                    <td>@albums.Fecha_publicacion_album</td>
+                    <td>@albums.Favoritos</td>
+                </tr>
+            </tbody>
+        }
+    }
+</table>
+@if(SaltarFA != 0){
+    <button type="button" class="btn btn-primary" @onclick="@AnteriorA">Anterior</button>
+}
+@if(SaltarFA < (TotalA - 10)){
+    <button type="button" class="btn btn-primary" @onclick="@SiguienteA">Siguiente</button>
+}
+
+@code{
+    Album album = new Album();
+    private IEnumerable<Album> albumnes;
+    int SaltarFA = 0;
+    int TotalA;
+    protected override async Task OnInitializedAsync()
+    {
+        albumnes = await IAlbumService.AlbumnesGustados();
+        TotalA = albumnes.Count();
+        albumnes = albumnes.Skip(SaltarFA).Take(10).ToList();
+    }
+    protected async Task AnteriorA(){
+        SaltarFA = SaltarFA - 10;
+        albumnes = await IAlbumService.AlbumnesGustados();
+        albumnes = albumnes.Skip(SaltarFA).Take(10).ToList();
+    }
+    protected async Task SiguienteA(){
+        SaltarFA = SaltarFA + 10;
+        albumnes = await IAlbumService.AlbumnesGustados();
+        albumnes = albumnes.Skip(SaltarFA).Take(10).ToList();
+    }
+}

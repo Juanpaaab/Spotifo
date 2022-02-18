@@ -1,0 +1,76 @@
+@page "/Filtros/FiltrosAlbumnes"
+
+@using Spotifo.Data.Model
+@using Spotifo.Data.Service
+@using System.IO
+@using Microsoft.AspNetCore.Http
+@using Spotifo.Pages.Filtros
+@inject ICancionService ICancionService
+@inject IUsuarioService IUsuarioService
+@inject IAlbumService IAlbumService
+@inject IGeneroService GeneroService
+@inject NavigationManager NavigationManager
+
+<!-- Filtro 3 -->
+<EditForm Model="@album" OnValidSubmit="@BuscarAlbum">
+        <div class="mb-3">
+            <label for="formFile" class="form-label">Género del álbum</label>
+            @if (generos != null)
+                    {
+                        <select class="form-select form-control" aria-label=".form-select-lg example" @bind="album.Genero_ID">
+                            <option selected>Elija el genero</option>
+                            @foreach (var Genero in generos)
+                            {
+                                <option value="@Genero.ID_genero">@Genero.Genero_Nombre</option>
+                            }
+                        </select>
+                    }
+        </div>
+        <button type="submit" class="btn btn-primary">Buscar</button>
+        <button type="button" class="btn btn-danger" @onclick="@Cancel">Cancelar</button>
+</EditForm>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">Nombre del álbum:</th>
+            <th scope="col">Género del álbum:</th>
+            <th scope="col">Fecha de publicación:</th>
+        </tr>
+    </thead>
+    @if ( albumnes != null)
+    {
+        @foreach (var albums in albumnes)
+        {
+            <tbody>
+                <tr>
+                    <a href="AlbumDescripcionGeneral/@albums.ID_album" target="_blank" ><td>@albums.Titulo_album</td></a>
+                    <td>@albums.Nombre_Genero</td>
+                    <td>@albums.Fecha_publicacion_album</td>
+                </tr>
+            </tbody>
+        }
+    }
+</table>
+
+@code {
+
+    Album album = new Album();
+    private IEnumerable<Album> albumnes;
+    private IEnumerable<Genero> generos;
+
+    protected override async Task OnInitializedAsync()
+    {
+        generos = await GeneroService.GetGeneros();
+    }
+
+    protected async Task BuscarAlbum()
+    {
+        albumnes = await IAlbumService.BusquedaGeneroA(album);
+    }
+
+    void Cancel()
+    {
+        NavigationManager.NavigateTo("/");
+    }
+}

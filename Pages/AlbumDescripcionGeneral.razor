@@ -1,0 +1,101 @@
+@page "/AlbumDescripcionGeneral"
+@page "/AlbumDescripcionGeneral/{_id:int}"
+
+@using Spotifo.Data.Model
+@using Spotifo.Data.Service
+@using System.IO
+@using Microsoft.AspNetCore.Http
+
+@inject NavigationManager NavigationManager
+@inject IHttpContextAccessor httpContextAccessor
+@inject ICancionService ICancionService
+@inject ICancionService CancionService
+@inject IAlbumService AlbumService
+@inject IAlbumService IAlbumService
+@inject IUsuarioService IUsuarioService
+@inject IUsuarioService UsuarionService
+@inject IFavoritosAlbumService FavoritosAlbumService
+@inject IFavoritosAlbumService IFavoritosAlbumService
+
+        <div class = 'col-md-4'>
+            <div>
+                @if(album.Cover_image != null) {  
+                    var base64 = Convert.ToBase64String(album.Cover_image);  
+                    var imgsrc = string.Format("data:image/jpg;base64,{0}", base64); 
+                    <img src = '@imgsrc' style = "max-width:500px;max-height:500px"/>  
+                }
+            </div>
+        </div>
+        
+        <div class="mb-3">
+    
+            <label for="formFile" class="form-label">Titulo del álbum: </label>
+            <input type="text" class="form-control" id="formFile" disabled @bind="album.Titulo_album">
+        </div>
+        <div class="mb-3">
+            <label for="formFile" class="form-label">Género del álbum:</label>
+            <input type="text" class="form-control" id="formFile" disabled @bind="album.Nombre_Genero">
+        </div>
+        <div class="mb-3">
+            <label for="formFile" class="form-label">Fecha de publicación</label>
+            <input type="date" class="form-control" id="formFile" disabled @bind="album.Fecha_publicacion_album">
+        </div>
+        <div class="mb-3">
+            <label for="formFile" class="form-label">Descripción:</label>
+            <input type="text" class="form-control" id="formFile" disabled @bind="album.Descripcion">
+        </div>
+        <div class="mb-3">
+            <label for="formFile" class="form-label">Autor del álbum:</label>
+            <a href="UsuarioDescripcionGeneral/@album._EmailUser/perfil">
+            <input type="text" class="form-control" id="formFile" disabled @bind="usuario.Nombre_usuario">
+            </a>
+        </div>
+        @if(FavoritosAlbum2 != null){
+            <div class="mb-3">
+                <button disabled @onclick="MeGusta" >Me gusta</button>
+            </div>
+        }else{
+            <div class="mb-3">
+                <button @onclick="MeGusta" >Me gusta</button>
+            </div>
+        }
+        
+        
+
+@code {
+
+    [Parameter]
+    public int _id { get; set; }
+    public string _email {get; set;}
+
+    Album album = new Album();
+    Usuario usuario = new Usuario();
+    FavoritosAlbum FavoritosAlbum = new FavoritosAlbum();
+    FavoritosAlbum FavoritosAlbum2 = new FavoritosAlbum();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (_id == 0)
+        {
+            album.Fecha_publicacion_album = DateTime.Now;
+        }
+        else
+        {
+            album = await AlbumService.AlbumDetails(_id);
+        }
+        _email = album._EmailUser;
+        usuario = await IUsuarioService.UsuarioDetails(_email);
+
+        FavoritosAlbum2 = await IFavoritosAlbumService.GetFA(_id);
+    }   
+
+    protected async Task MeGusta(){
+        int contMegusta;
+        contMegusta = album.Favoritos;
+        contMegusta = contMegusta + 1;
+        await AlbumService.GustadoAlbum(album, _id, contMegusta);
+
+        await IFavoritosAlbumService.AlbumGustado(FavoritosAlbum, _id);
+        FavoritosAlbum2 = await IFavoritosAlbumService.GetFA(_id);
+    }
+}

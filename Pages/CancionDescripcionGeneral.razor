@@ -1,0 +1,114 @@
+@page "/CancionDescripcionGeneral"
+@page "/CancionDescripcionGeneral/{_id:int}"
+
+@using Spotifo.Data.Model
+@using Spotifo.Data.Service
+@using System.IO
+@using Microsoft.AspNetCore.Http
+@using Microsoft.JSInterop
+
+@inject IJSRuntime JS
+@inject ICancionService ICancionService
+@inject ICancionService CancionService
+@inject NavigationManager NavigationManager
+@inject IFavoritosCancionService FavoritosCancionService
+@inject IFavoritosCancionService IFavoritosCancionService
+
+
+<div class="mb-3">
+            <label for="formFile" class="form-label">Nombre de la canción: </label>
+            <input type="text" class="form-control" id="formFile" disabled @bind="cancion.Nombre_cancion">
+        </div>
+        <div class="mb-3">
+            <label for="formFile" class="form-label">Género de la canción: </label>
+            <input type="text" class="form-control" id="formFile" disabled @bind="cancion.Nombre_Genero">
+        </div>
+        <div class="mb-3">
+            <label for="formFile" class="form-label">Fecha de publicación: </label>
+            <input type="date" class="form-control" id="formFile" disabled @bind="cancion.Fecha_publicacion_cancion">
+        </div>
+        <div class="mb-3">
+            <label for="formFile" class="form-label">Cantidad de me gustas: </label>
+            <input type="text" class="form-control" id="formFile" disabled @bind="cancion.Favoritos">
+        </div>
+        <div class="mb-3">
+            <label for="formFile" class="form-label">Cantidad de reproduciones: </label>
+            <input type="text" class="form-control" id="formFile" disabled @bind="cancion.Vistas">
+        </div>
+
+        <audio id='@cancion.Nombre_cancion' source src='/canciones/@cancion.URL'>
+        </audio>
+        <div>
+            @if(FavoritosCancion2 != null){
+            <div class="mb-3">
+                <input type="button" disabled @onclick="MeGusta" value="Me gusta" />
+            </div>
+        }else{
+            <div class="mb-3">
+                <input type="button" @onclick="MeGusta" value="Me gusta" />
+            </div>
+        }
+        </div>
+        <button id="@cancion.Nombre_cancion" @onclick="ReproducirNET">Reproducir</button>
+        <button id="@cancion.Nombre_cancion" @onclick="PausarNET">Pausar</button>
+
+@code {
+
+    [Parameter]
+    public int _id { get; set; }
+    private IJSObjectReference module;
+
+    Cancion cancion = new Cancion();
+    FavoritosCancion FavoritosCancion = new FavoritosCancion();
+    FavoritosCancion FavoritosCancion2 = new FavoritosCancion();
+    public string audio1;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (_id == 0)
+        {
+            cancion.Fecha_publicacion_cancion = DateTime.Now;
+        }
+        else
+        {
+            cancion = await CancionService.CancionDetails(_id);
+            FavoritosCancion2 = await IFavoritosCancionService.GetFA(_id);
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            module = await JS.InvokeAsync<IJSObjectReference>("import", 
+                "./scripts.js");
+        }
+    }
+
+    public async Task ReproducirNET()
+    {
+        string audio1 = cancion.Nombre_cancion;
+        await JS.InvokeVoidAsync("ReproductorMaestro.ReproducirJS", audio1);
+        int contReproducido;
+        contReproducido = cancion.Vistas;
+        contReproducido = contReproducido + 1;
+        await CancionService.VistasCancion(cancion, _id, contReproducido);
+    }
+
+    public async Task PausarNET()
+    {   
+        string audio1 = cancion.Nombre_cancion;
+        await JS.InvokeVoidAsync("ReproductorMaestro.PausarJS", audio1);
+    }
+
+    protected async Task MeGusta(){
+        int contMegusta;
+        contMegusta = cancion.Favoritos;
+        contMegusta = contMegusta + 1;
+        await CancionService.GustadoCancion(cancion, _id, contMegusta);
+
+        await IFavoritosCancionService.CancionGustado(FavoritosCancion, _id);
+        FavoritosCancion2 = await IFavoritosCancionService.GetFA(_id);
+    }
+
+}

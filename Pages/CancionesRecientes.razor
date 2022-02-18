@@ -1,0 +1,70 @@
+@page "/CancionesRecientes"
+
+@using Spotifo.Data.Model
+@using Spotifo.Data.Service
+@using System.IO
+@using Microsoft.AspNetCore.Http
+
+@inject ICancionService ICancionService
+@inject ICancionService CancionService
+@inject NavigationManager NavigationManager
+
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">Nombre de la cancion</th>
+            <th scope="col">Género de la canción</th>
+            <th scope="col">Fecha de publicación</th>
+            <th scope="col">Veces reproducida</th>
+            <th scope="col">Reproductor</th>
+        </tr>
+    </thead>
+    @if(canciones != null)
+    {
+        @foreach (var songs in canciones)
+        {
+            <tbody>
+                <tr>
+                    <a href="CancionDescripcionGeneral/@songs.ID_cancion" target="_blank"><td>@songs.Nombre_cancion</td></a>
+                    <td>@songs.Nombre_Genero</td>
+                    <td>@songs.Fecha_publicacion_cancion</td>
+                    <td>@songs.Vistas</td>
+                    <td><audio controls="controls" id='@songs.Nombre_cancion' source src='/canciones/@songs.URL'></audio></td>
+                </tr>
+            </tbody>
+        }
+    }
+</table>
+@if(SaltarFC != 0){
+    <button type="button" class="btn btn-primary" @onclick="@AnteriorC">Anterior</button>
+}
+@if(SaltarFC < (TotalC - 10)){
+    <button type="button" class="btn btn-primary" @onclick="@SiguienteC">Siguiente</button>
+}
+
+@code {
+    private IEnumerable<Cancion> canciones, cancionesTodas;
+    DateTime HaceUnaSemana = DateTime.Today.AddDays(-7);
+    int SaltarFC = 0;
+    int TotalC;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        cancionesTodas = await CancionService.CancionListPura();
+        cancionesTodas = cancionesTodas.OrderByDescending(cancionesTodas => cancionesTodas.Fecha_publicacion_cancion);
+        foreach(var songs in cancionesTodas){
+            cancionesTodas = cancionesTodas.Where(songs => songs.Fecha_publicacion_cancion > HaceUnaSemana).ToList();
+        }
+        TotalC = cancionesTodas.Count();
+        canciones = cancionesTodas.Skip(SaltarFC).Take(10).ToList();
+    }
+
+    protected void AnteriorC(){
+        SaltarFC = SaltarFC - 10;
+        canciones = cancionesTodas.Skip(SaltarFC).Take(10).ToList();
+    }
+    protected void SiguienteC(){
+        SaltarFC = SaltarFC + 10;
+        canciones = cancionesTodas.Skip(SaltarFC).Take(10).ToList();
+    }
+}

@@ -1,0 +1,73 @@
+@page "/UsuarioDescripcion"
+@page "/UsuarioDescripcion/{_id}"
+
+@using Spotifo.Data.Model
+@using Spotifo.Data.Service
+@using System.IO
+@using Microsoft.AspNetCore.Http
+
+@inject NavigationManager NavigationManager
+@inject IHttpContextAccessor httpContextAccessor
+@inject ICancionService CancionService
+@inject IAlbumService AlbumService
+@inject IUsuarioService UsuarioService
+@inject IUsuarioService IUsuarioService
+
+@if (httpContextAccessor.HttpContext.User.Identity.Name == null)
+{
+    <h1> DEBES INICIAR SESIÓN </h1>
+}
+else
+{   
+    <h1>Actualizar usuario</h1>
+    <EditForm Model="@usuario" OnValidSubmit="@UsuarioUpdate">
+        <div class="mb-3">
+            <label for="formFile" class="form-label">Nombre del usuario</label>
+            <input type="text" class="form-control" id="formFile" @bind="usuario.Nombre_usuario">
+        </div>
+        <div class="mb-3">
+            <label for="formFile" class="form-label">Apellido del usuario</label>
+            <input type="text" class="form-control" id="formFile" @bind="usuario.Apellido_usuario">
+        </div>
+        <div class="mb-3">
+            <label for="formFile" class="form-label">Email</label>
+            <input type="text" class="form-control" id="formFile" @bind="usuario.Email">
+        </div>
+        <div class="mb-3">
+            <label for="formFile" class="form-label">Biografía</label>
+            <input type="text" class="form-control" id="formFile" @bind="usuario.Descripcion">
+        </div>
+        <button type="submit" class="btn btn-primary">Actualizar usuario</button>
+        <button type="button" class="btn btn-danger" @onclick="@Cancel">Cancelar</button>
+    </EditForm>
+    <button type="button" class="btn btn-danger" @onclick="@EliminarUsuario">Eliminar usuario</button>
+}
+
+@code {
+
+    [Parameter]
+    public string _id { get; set; }
+    Usuario usuario = new Usuario();
+
+    protected override async Task OnInitializedAsync()
+    {
+        usuario = await UsuarioService.UsuarioDetailsUnico(_id);
+    }
+
+    protected async Task EliminarUsuario(){
+        await IUsuarioService.EliminarUsuario(_id);
+        NavigationManager.NavigateTo("/EliminarUsuarios");
+    }
+
+    protected async Task UsuarioUpdate()
+    {
+        await IUsuarioService.UsuarioUpdate(usuario, _id);
+
+        NavigationManager.NavigateTo("/EliminarUsuarios");
+    }
+
+    void Cancel()
+    {
+        NavigationManager.NavigateTo("/");
+    }
+}

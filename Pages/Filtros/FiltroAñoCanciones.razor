@@ -1,0 +1,95 @@
+@page "/Filtros/FiltroAñoCanciones"
+
+@using Spotifo.Data.Model
+@using Spotifo.Data.Service
+@using System.IO
+@using Microsoft.AspNetCore.Http
+
+@inject ICancionService ICancionService
+@inject ICancionService CancionService
+@inject NavigationManager NavigationManager
+
+<EditForm Model="@cancion" OnValidSubmit="@BuscarDecadaCancion">
+        <div class="mb-3">
+            <label for="formFile" class="form-label">Decada:</label>
+            <input type = "text" @bind="Decada">
+        </div>
+        <button type="submit" class="btn btn-primary">Buscar</button>
+        <button type="button" class="btn btn-danger" @onclick="@Cancel">Cancelar</button>
+</EditForm>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">Nombre de la cancion</th>
+            <th scope="col">Género de la canción</th>
+            <th scope="col">Fecha de publicación</th>
+            <th scope="col">Reproductor</th>
+        </tr>
+    </thead>
+    @if (canciones != null)
+    {
+        @foreach (var songs in canciones)
+        {
+            DateTime Fecha = songs.Fecha_publicacion_cancion;
+            
+            @if(Fecha > InicioDecada){
+                @if(Fecha < FinDecada){
+                    <tbody>
+                        <tr>
+                            <a href="CancionDescripcionGeneral/@songs.ID_cancion" target="_blank" ><td>@songs.Nombre_cancion</td></a>
+                            <td>@songs.Nombre_Genero</td>
+                            <td>@songs.Fecha_publicacion_cancion</td>
+                            <td><audio controls="controls" id='@songs.Nombre_cancion' source src='/canciones/@songs.URL'></audio></td>
+                        </tr>
+                    </tbody>
+                }
+            }
+        }
+    }
+</table>
+@if(SaltarFC != 0){
+    <input type="button" value="Anterior" class="btn btn-primary" @onclick="@AnteriorC"/>
+}
+@if(SaltarFC < (TotalC - 10)){
+    <input type="button" value="Siguiente" class="btn btn-primary" @onclick="@SiguienteC"/>
+}
+
+@code {
+    Cancion cancion = new Cancion();
+    private IEnumerable<Cancion> canciones;
+    private IEnumerable<Cancion> canciones1;
+    int Decada, Decada10, TotalC;
+    int SaltarFC = 0;
+    DateTime InicioDecada, FinDecada;
+
+    protected async Task BuscarDecadaCancion()
+    {
+        InicioDecada = new DateTime(Decada, 1, 1);
+        Decada10 = Decada + 10;
+        FinDecada = new DateTime(Decada10, 1, 1);
+
+        canciones1 = await ICancionService.CancionListPura();
+
+        foreach(var songs in canciones1){
+            canciones1 = canciones1.Where(songs => songs.Fecha_publicacion_cancion > InicioDecada).ToList();
+        }
+        foreach(var songs in canciones1){
+            canciones1 = canciones1.Where(songs => songs.Fecha_publicacion_cancion < FinDecada).ToList();
+        }
+        TotalC = canciones1.Count();
+        canciones = canciones1.Skip(SaltarFC).Take(10).ToList();
+    }
+    protected void AnteriorC(){
+        SaltarFC = SaltarFC - 10;
+        canciones = canciones1.Skip(SaltarFC).Take(10).ToList();
+    }
+    protected void SiguienteC(){
+        SaltarFC = SaltarFC + 10; 
+        canciones = canciones1.Skip(SaltarFC).Take(10).ToList();
+    }
+    void Cancel()
+    {
+        NavigationManager.NavigateTo("/");
+    }
+}

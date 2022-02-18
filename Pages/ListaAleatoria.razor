@@ -1,0 +1,145 @@
+@page "/ListaAleatoria"
+
+@using Spotifo.Data.Model
+@using Spotifo.Data.Service
+@using System.IO
+@using Microsoft.AspNetCore.Http
+@using Spotifo.Pages.Filtros
+
+@inject IJSRuntime JS
+@inject ICancionService ICancionService
+@inject IUsuarioService IUsuarioService
+@inject IAlbumService IAlbumService
+@inject IGeneroService GeneroService
+@inject NavigationManager NavigationManager
+
+<EditForm Model="@genero">
+<table>
+    <tr>
+        <td>
+            <label for="formFile" class="form-label">Género de la canción</label>
+            @if (generos != null)
+            {
+                <table>
+                @foreach (var Genero in generos)
+                {
+                    <tr>
+                        <td>@Genero.Genero_Nombre</td>
+                        <td><input type="text" @bind-value="Formulario[Genero.ID_genero]"></td>
+                    </tr>
+                }
+                <tr>
+                    <td>
+                        <button @onclick="()=>GenerarLAleatoria(generos)">Generar Lista</button>
+                    </td>
+                </tr>
+                </table>
+            }
+        </td>
+    </tr>
+</table>
+</EditForm>
+
+<EditForm Model="@cancion" OnValidSubmit="@GenerarLista">
+    <table>
+        <tr>
+            <td>
+                <label for="formFile" class="form-label">Cantidad de canciones a agregar: </label>
+                <input type="text" @bind = "cancion.cantidad">
+            </td>
+        </tr>
+        <tr>
+            <td><button type="submit" class="btn btn-primary">Generar Aleatoría</button></td>
+            <td><button type="button" class="btn btn-danger" @onclick="@Cancel">Cancelar</button></td>
+        </tr>
+    </table>
+</EditForm>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">Nombre de la cancion:</th>
+            <th scope="col">Género de la canción:</th>
+            <th scope="col">Fecha de publicación:</th>
+            <th scope="col">Reproductor:</th>
+        </tr>
+    </thead>
+    @if(concatenado1 != null)
+    {
+        @foreach (var songs in concatenado1)
+        {
+            <tbody>
+                <tr>
+                    <a href="CancionDescripcionGeneral/@songs.ID_cancion" target="_blank"><td>@songs.Nombre_cancion</td></a>
+                    <td>@songs.Nombre_Genero</td>
+                    <td>@songs.Fecha_publicacion_cancion</td>
+                    <td><audio controls="controls" id='@songs.Nombre_cancion' source src='/canciones/@songs.URL'></audio></td>
+                </tr>
+            </tbody>
+        }
+    }
+</table>
+@if(SaltarFC != 0){
+    <input type="button" value="Anterior" class="btn btn-primary" @onclick="@AnteriorA"/>
+}
+@if(SaltarFC < (TotalC - 10)){
+    <input type="button" value="Siguiente" class="btn btn-primary" @onclick="@SiguienteA"/>
+}
+
+@code {
+    
+    Cancion cancion = new Cancion();
+    Genero genero = new Genero();
+    private IEnumerable<Cancion> canciones;
+    IEnumerable<Genero> generos;
+    private IEnumerable<Cancion> concatenado1;
+    private IEnumerable<Cancion> concatenadoTodos;
+
+    int CantidadGeneros;
+    int TotalC;
+    int SaltarFC;
+    int[] Formulario;
+    protected override async Task OnInitializedAsync()
+    {
+        generos = await GeneroService.GetGeneros();
+        CantidadGeneros = generos.Count() + 1;
+        Formulario = new int[CantidadGeneros];
+    }
+
+    protected async Task GenerarLista()
+    {
+        canciones = await ICancionService.GenerarLista(cancion);
+        concatenado1 = canciones;
+        TotalC = concatenado1.Count();
+    }
+
+    void Cancel()
+    {
+        NavigationManager.NavigateTo("/");
+    }
+
+    protected async Task GenerarLAleatoria(IEnumerable<Genero> generos){
+        concatenado1 = null;
+        concatenadoTodos = null;
+        canciones = null;
+        foreach(var gender in generos){
+                if(Formulario[gender.ID_genero] != 0){
+                    canciones = await ICancionService.GenerarLAleatoria(gender.ID_genero, Formulario[gender.ID_genero]);
+                    concatenadoTodos = (concatenadoTodos ?? Enumerable.Empty<Cancion>()).Concat(canciones ?? Enumerable.Empty<Cancion>());
+                }
+            }
+        var numerito = new Random((int)DateTime.Now.Ticks);
+        concatenadoTodos = concatenadoTodos.OrderBy(l =>  numerito.Next());
+        concatenado1 = concatenadoTodos.OrderBy(l =>  numerito.Next());
+        TotalC = concatenadoTodos.Count();
+    }
+
+    protected void AnteriorA(){
+        SaltarFC = SaltarFC - 10;
+        concatenado1 = concatenadoTodos.Skip(SaltarFC).Take(10).ToList();
+    }
+    protected void SiguienteA(){
+        SaltarFC = SaltarFC + 10;
+        concatenado1 = concatenadoTodos.Skip(SaltarFC).Take(10).ToList();
+    }
+}

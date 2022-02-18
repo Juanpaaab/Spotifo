@@ -1,0 +1,72 @@
+@page "/Filtros/Estadisticas"
+
+@using Spotifo.Data.Model
+@using Spotifo.Data.Service
+@using Microsoft.AspNetCore.Http
+
+@inject IHttpContextAccessor httpContextAccessor
+
+@inject ICancionService ICancionService
+@inject NavigationManager NavigationManager
+
+<EditForm Model="@usuario" OnValidSubmit="@TraerCancionesUsuario">
+    <table>
+        <tr>
+            <td>Nombre del cantante:</td>
+            <td><input type="text" @bind="usuario.Nombre_usuario" /></td>
+        </tr>
+        <tr>
+            <td>Apellido del cantante:</td>
+            <td><input type="text" @bind="usuario.Apellido_usuario" /></td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <input type="submit" value="Buscar" />
+                <input type="button" value="Cancelar" @onclick="@Cancel" />
+            </td>
+        </tr>
+    </table>
+</EditForm>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">Nombre de la cancion:</th>
+            <th scope="col">Género de la canción:</th>
+            <th scope="col">Fecha de publicación:</th>
+            <th scope="col">Me gustas:</th>
+            <th scope="col">Cantidad de reproduciones:</th>
+        </tr>
+    </thead>
+    @if (canciones != null)
+    {
+        @foreach (var songs in canciones)
+        {
+            <tbody>
+                <tr>
+                    <a href="CancionDescripcionGeneral/@songs.ID_cancion" target="_blank" ><td>@songs.Nombre_cancion</td></a>
+                    <td>@songs.Nombre_Genero</td>
+                    <td>@songs.Fecha_publicacion_cancion</td>
+                    <td>@songs.Favoritos</td>
+                    <td>@songs.Vistas</td>
+                </tr>
+            </tbody>
+        }
+    }
+</table>
+
+@code {
+        private IEnumerable<Cancion> canciones;
+
+        Usuario usuario = new Usuario();
+
+        protected async Task TraerCancionesUsuario()
+        {
+            canciones = await ICancionService.TraerCancionesUsuario(usuario);
+        }
+
+        void Cancel()
+    {
+        NavigationManager.NavigateTo("/");
+    }
+}

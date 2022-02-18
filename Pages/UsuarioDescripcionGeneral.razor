@@ -1,0 +1,52 @@
+@page "/UsuarioDescripcionGeneral"
+@page "/UsuarioDescripcionGeneral/{_email}/perfil"
+
+@using Spotifo.Data.Model
+@using Spotifo.Data.Service
+@using System.IO
+@using Microsoft.AspNetCore.Http
+
+@inject NavigationManager NavigationManager
+@inject ICancionService ICancionService
+@inject ICancionService CancionService
+@inject IUsuarioService IUsuarioService
+@inject IUsuarioService UsuarionService
+@inject IAlbumService AlbumService
+@inject IAlbumService IAlbumService
+<h1>PERFIL DEL ARTISTA</h1>
+        <div class="mb-3">
+            <label for="formFile" class="form-label">Nombre del artista:</label>
+            <input type="text" class="form-control" id="formFile" disabled @bind="usuario.Nombre_usuario">
+        </div>
+        <div class="mb-3">
+            <label for="formFile" class="form-label">Apellido del artista:</label>
+            <input type="text" class="form-control" id="formFile" disabled @bind="usuario.Apellido_usuario">
+        </div>
+        <div class="mb-3">
+            <label for="formFile" class="form-label">Nacionalidad del artista:</label>
+            <input type="text" class="form-control" id="formFile" disabled @bind="usuario.Nacionalidad">
+        </div>
+        <div class="mb-3">
+            <label for="formFile" class="form-label">Email del artista:</label>
+            <input type="text" class="form-control" id="formFile" disabled @bind="usuario.Email">
+        </div>
+        <div class="mb-3">
+            <label for="formFile" class="form-label">Biografía del artista:</label>
+            <input type="text" class="form-control" id="formFile" disabled @bind="usuario.Descripcion">
+        </div>
+        <div class="mb-3">
+            <label for="formFile" class="form-label">Número de canciones:</label>
+            <input type="text" class="form-control" id="formFile" disabled @bind="usuario.Cancion_Num">
+        </div>
+@code {
+
+    [Parameter]
+    public string _email { get; set; }
+    
+    Usuario usuario = new Usuario();
+
+    protected override async Task OnInitializedAsync()
+    {
+        usuario = await IUsuarioService.UsuarioDetails(_email);
+    }
+}

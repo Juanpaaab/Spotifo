@@ -1,0 +1,75 @@
+﻿@page "/CancionUpdate"
+@using Spotifo.Data.Model
+@using Spotifo.Data.Service
+@using Microsoft.AspNetCore.Http
+
+@inject IHttpContextAccessor httpContextAccessor
+
+@inject ICancionService ICancionService
+@inject NavigationManager NavigationManager
+@if (httpContextAccessor.HttpContext.User.Identity.Name == null)
+{
+    <h1> DEBES INICIAR SESIÓN </h1>
+}
+else
+{
+    <h1>Actualizar canción</h1>
+
+    <EditForm Model="@cancion" OnValidSubmit="@CancionUpdate2">
+        <table>
+            <tr>
+                <td>Nombre:</td>
+                <td><input type="text" @bind="cancion.Nombre_cancion" /></td>
+            </tr>
+            <tr>
+                <td>Genero:</td>
+                <td><input type="text" @bind="cancion.Genero_ID" /></td>
+            </tr>
+            <tr>
+                <td>Fecha de publicación:</td>
+                <td><input type="date" @bind="cancion.Fecha_publicacion_cancion" /></td>
+            </tr>
+            <tr>
+                <td>URL:</td>
+                <td><input type="text" @bind="cancion.URL" /></td>
+            </tr>
+            <tr>
+                <td>Titulo del album:</td>
+                <td><input type="text" @bind="album.Titulo_album" /></td>
+            </tr>
+            <tr>
+                <td>Nombre del usuario:</td>
+                <td><input type="text" @bind="usuario.Nombre_usuario" /></td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <input type="submit" value="Añadir canción" />
+                    <input type="button" value="Cancelar" @onclick="@Cancel" />
+                </td>
+            </tr>
+
+        </table>
+
+    </EditForm>
+}
+
+    @code {
+        [Parameter]
+        public int _id { get; set; }
+
+        Cancion cancion = new Cancion();
+        Album album = new Album();
+        Usuario usuario = new Usuario();
+
+        protected async Task CancionUpdate2()
+        {
+            await ICancionService.CancionUpdate2(cancion, album, usuario, _id);
+
+            NavigationManager.NavigateTo("/");
+        }
+
+        void Cancel()
+        {
+            NavigationManager.NavigateTo("/");
+        }
+    }

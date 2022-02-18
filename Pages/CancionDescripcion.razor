@@ -1,0 +1,123 @@
+﻿@page "/CancionDescripcion"
+@page "/CancionDescripcion/{_id:int}"
+
+@using Spotifo.Data.Model
+@using Spotifo.Data.Service
+@using System.IO
+@using Microsoft.AspNetCore.Http
+
+@inject NavigationManager NavigationManager
+@inject IHttpContextAccessor httpContextAccessor
+@inject ICancionService ICancionService
+@inject ICancionService CancionService
+@inject IAlbumService AlbumService
+
+@if (httpContextAccessor.HttpContext.User.Identity.Name == null)
+{
+    <h1> DEBES INICIAR SESIÓN </h1>
+}
+else
+{
+    <h1>Actualizar canción</h1>
+    <EditForm Model="@cancion" OnValidSubmit="@CancionUpdate2">
+        <div class="mb-3">
+            <label for="formFile" class="form-label">Nombre de la canción</label>
+            <input type="text" class="form-control" id="formFile" @bind="cancion.Nombre_cancion">
+        </div>
+        <div class="mb-3">
+            <label for="formFile" class="form-label">Género de la canción</label>
+            <input type="text" class="form-control" id="formFile" @bind="cancion.Nombre_Genero">
+        </div>
+        <div class="mb-3">
+            <label for="formFile" class="form-label">Fecha de publicación</label>
+            <input type="date" class="form-control" id="formFile" @bind="cancion.Fecha_publicacion_cancion">
+        </div>
+        <div class="mb-3">
+            <label for="formFile" class="form-label">Sube la canción</label>
+            <InputFile OnChange="CargarCancion" type="file" class="form-control">Subir Canción</InputFile>
+        </div>
+        <div class="mb-3">
+            <label for="formFile" class="form-label">Elije el álbum</label>
+            @if (albumes == null)
+            {
+
+            }
+            else
+            {
+                <select class="form-select form-control" aria-label=".form-select-lg example" @bind="album.Titulo_album">
+
+                    <option selected>Elija el album al que pertenece</option>
+                    @foreach (var Album in albumes)
+                    {
+                        <option value="@Album.Titulo_album">@Album.Titulo_album</option>
+                    }
+                </select>
+            }
+        </div>
+        <button type="submit" class="btn btn-primary">Actualizar canción</button>
+        <button type="button" class="btn btn-danger" @onclick="@Cancel">Cancelar</button>
+    </EditForm>
+    <p></p>
+    <button type="button" class="btn btn-danger" @onclick="@EliminarCancion">Eliminar canción</button>
+}
+@code {
+    private IEnumerable<Album> albumes;
+
+    [Parameter]
+    public int _id { get; set; }
+
+    Cancion cancion = new Cancion();
+    Album album = new Album();
+    Usuario usuario = new Usuario();
+
+    protected override async Task OnInitializedAsync()
+    {
+        albumes = await AlbumService.AlbumListPersonal();
+        if (_id == 0)
+        {
+            cancion.Fecha_publicacion_cancion = DateTime.Now;
+        }
+        else
+        {
+            cancion = await CancionService.CancionDetails(_id);
+        }
+    }
+
+    async Task CargarCancion(InputFileChangeEventArgs e)
+    {
+        var folderName = Path.Combine("wwwroot", "canciones");
+        var pathToSave = Path.Combine(Directory.GetCurrentDirectory(), folderName);
+        var fullPath = Path.Combine(pathToSave, e.File.Name.Replace(" ", "-"));
+
+        cancion.Extension = e.File.Name.Substring(e.File.Name.Count() - 3, 3);
+        cancion.URL = e.File.Name.Replace(" ", "-");
+
+        using (var ms = new MemoryStream())
+        {
+            var maxAllowedSize = 5000000;
+            await e.File.OpenReadStream(maxAllowedSize).CopyToAsync(ms);
+            await File.WriteAllBytesAsync(fullPath, ms.ToArray());
+        }
+    }
+
+    protected async Task CancionUpdate2()
+    {
+        await ICancionService.CancionUpdate2(cancion, album, usuario, _id);
+
+        NavigationManager.NavigateTo("/");
+    }
+
+    void Cancel()
+    {
+        NavigationManager.NavigateTo("/");
+    }
+
+    protected async Task EliminarCancion()
+    {
+        await ICancionService.EliminarCancion(_id);
+
+        NavigationManager.NavigateTo("/");
+    }
+
+
+}

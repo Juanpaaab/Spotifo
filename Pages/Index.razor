@@ -1,0 +1,119 @@
+﻿@page "/"
+
+@using Spotifo.Data.Model
+@using Spotifo.Data.Service
+
+@inject IUsuarioService UsuarioService
+@inject IUsuarioService IUsuarioService
+@inject ICancionService CancionService
+@inject ICancionService ICancionService
+@inject IAlbumService AlbumService
+@inject IAlbumService IAlbumService
+
+
+<h1>¡Bienvenido a Spotifo!</h1>
+
+<h3>Lista de Canciones</h3>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">Nombre Cancion</th>
+            <th scope="col">Género Canción</th>
+            <th scope="col">Fecha publicación</th>
+            <th scope="col">Titulo del album</th>
+            <th scope="col">Autores</th>
+        </tr>
+    </thead>
+    @if (canciones != null)
+    {
+        @foreach (var song in canciones)
+        {
+            <tbody>
+                <tr>
+                    <a href="CancionDescripcionGeneral/@song.ID_cancion"><td>@song.Nombre_cancion</td></a>
+                    <td>@song.Nombre_Genero</td>
+                    <td>@song.Fecha_publicacion_cancion</td>
+                    <td><a href="AlbumDescripcionGeneral/@song.Album_ID">@song.User_Titulo_Album</a></td>
+                    <td><a href="UsuarioDescripcionGeneral/@song._EmailUser/perfil">@song.Usuario_ID</a></td>
+                </tr>
+            </tbody>
+        }
+    }
+</table>
+@if(SaltarFC != 0){
+    <input type="button" value="Anterior" class="btn btn-primary" @onclick="@AnteriorC" />
+}
+@if(SaltarFC < (TotalC - 10)){
+    <input type="button" value="Siguiente" class="btn btn-primary" @onclick="@SiguienteC" />
+}
+
+<h3>Lista de Albumnes</h3>
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">Titulo del Album</th>
+            <th scope="col">Género del Album</th>
+            <th scope="col">Fecha publicación</th>
+            <th scope="col">Autor del album</th>
+        </tr>
+    </thead>
+    @if (albumes != null)
+    {
+        @foreach (var albums in albumes)
+        {
+                <tbody>
+                <tr>
+                    <td><a href="AlbumDescripcionGeneral/@albums.ID_album">@albums.Titulo_album</a></td>
+                    <td>@albums.Nombre_Genero</td>
+                    <td>@albums.Fecha_publicacion_album</td>
+                    <td><a href="UsuarioDescripcionGeneral/@albums._EmailUser/perfil">@albums.Usuario_ID</a></td>
+                </tr>
+            </tbody>
+        }
+    }
+</table>
+@if(SaltarFA != 0){
+    <input type="button" value="Anterior" class="btn btn-primary" @onclick="@AnteriorA"/>
+}
+@if(SaltarFA < (TotalA - 10)){
+    <input type="button" value="Siguiente" class="btn btn-primary" @onclick="@SiguienteA"/>
+}
+
+@code {
+    IEnumerable<Cancion> canciones;
+    IEnumerable<Cancion> cancionesTodas;
+    IEnumerable<Album> albumes;
+    IEnumerable<Album> albumesTodos;
+    int TotalA, TotalC;
+    int SaltarFC = 0;
+    int SaltarFA = 0;
+    Cancion cancion = new Cancion();
+    protected override async Task OnInitializedAsync()
+    {
+        canciones = await CancionService.CancionList(SaltarFC);
+        albumes = await AlbumService.AlbumList(SaltarFA);
+        cancionesTodas = await CancionService.CancionListPura();
+        albumesTodos = await AlbumService.AlbumListPura();
+        TotalC = cancionesTodas.Count();
+        TotalA = albumesTodos.Count();
+    }
+    protected async Task AnteriorC(){
+        SaltarFC = SaltarFC - 10;
+        canciones = await CancionService.CancionList(SaltarFC);
+    }
+    protected async Task SiguienteC(){
+        SaltarFC = SaltarFC + 10; 
+        canciones = await CancionService.CancionList(SaltarFC);
+    }
+    protected async Task AnteriorA(){
+        SaltarFA = SaltarFA - 10;
+        albumes = await AlbumService.AlbumList(SaltarFA);
+    }
+    protected async Task SiguienteA(){
+        SaltarFA = SaltarFA + 10;
+        albumes = await AlbumService.AlbumList(SaltarFA);
+    }
+}
+
+

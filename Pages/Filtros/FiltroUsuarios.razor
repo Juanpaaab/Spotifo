@@ -1,0 +1,70 @@
+@page "/Filtros/FiltrosUsuarios"
+
+@using Spotifo.Data.Model
+@using Spotifo.Data.Service
+@using System.IO
+@using Microsoft.AspNetCore.Http
+@using Spotifo.Pages.Filtros
+@inject ICancionService ICancionService
+@inject IUsuarioService IUsuarioService
+@inject IAlbumService IAlbumService
+@inject NavigationManager NavigationManager
+
+<!--Filtro 1 -->
+
+<EditForm Model="@usuario" OnValidSubmit="@BuscarNacion">
+        <div class="mb-3">
+            <label for="formFile" class="form-label">Nacionalidad</label>
+            <select class="form-select form-control" aria-label=".form-select-lg example" @bind="usuario.Nacionalidad">
+                    <option value="Peruana">Peruana</option>
+                    <option value="Colombiana">Colombiana</option>
+                    <option value="Argentina">Argentina</option>
+                    <option value="Venezolana">Venezolana</option>
+                    <option selected>Elije la nacionalidad</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Buscar</button>
+        <button type="button" class="btn btn-danger" @onclick="@Cancel">Cancelar</button>
+</EditForm>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">Nombre del autor:</th>
+            <th scope="col">Apellido del autor:</th>
+            <th scope="col">Biografía:</th>
+            <th scope="col">Nacionalidad:</th>
+        </tr>
+    </thead>
+    @if ( usuarios != null)
+    {
+        @foreach (var users in usuarios)
+        {
+            <tbody>
+                <tr>
+                    <a href="/UsuarioDescripcionGeneral/@users.Email/perfil" target="_blank" ><td>@users.Nombre_usuario</td></a>
+                    <td>@users.Apellido_usuario</td>
+                    <td>@users.Descripcion</td>
+                    <td>@users.Nacionalidad</td>
+                </tr>
+            </tbody>
+        }
+    }
+</table>
+
+@code {
+
+    Usuario usuario = new Usuario();
+
+    private IEnumerable<Usuario> usuarios;
+
+    protected async Task BuscarNacion()
+    {
+        usuarios = await IUsuarioService.BusquedaNacionalidad(usuario);
+    }
+
+    void Cancel()
+    {
+        NavigationManager.NavigateTo("/");
+    }
+}

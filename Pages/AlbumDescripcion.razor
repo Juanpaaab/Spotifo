@@ -1,0 +1,97 @@
+@page "/AlbumDescripcion"
+@page "/AlbumDescripcion/{_id:int}"
+
+@using Spotifo.Data.Model
+@using Spotifo.Data.Service
+@using System.IO
+@using Microsoft.AspNetCore.Http
+
+@inject NavigationManager NavigationManager
+@inject IHttpContextAccessor httpContextAccessor
+@inject ICancionService ICancionService
+@inject ICancionService CancionService
+@inject IAlbumService AlbumService
+@inject IAlbumService IAlbumService
+
+@if (httpContextAccessor.HttpContext.User.Identity.Name == null)
+{
+    <h1> DEBES INICIAR SESIÓN </h1>
+}
+else
+{
+    <h1>Actualizar album</h1>
+    <EditForm Model="@album" OnValidSubmit="@AlbumUpdate2">
+        <div class="mb-3">
+            <label for="formFile" class="form-label">Titulo del album</label>
+            <input type="text" class="form-control" id="formFile" @bind="album.Titulo_album">
+        </div>
+        <div class="mb-3">
+            <label for="formFile" class="form-label">Género del album</label>
+            <input type="text" class="form-control" id="formFile" @bind="album.Nombre_Genero">
+        </div>
+        <div class="mb-3">
+            <label for="formFile" class="form-label">Fecha de publicación</label>
+            <input type="date" class="form-control" id="formFile" @bind="album.Fecha_publicacion_album">
+        </div>
+        <div class="mb-3">
+            <label for="formFile" class="form-label">Subir Cover del Album</label>
+            <InputFile OnChange="CargarCover" type="file" class="form-control"></InputFile>
+        </div>
+        <div class="mb-3">
+            <label for="formFile" class="form-label">Descripcion</label>
+            <input type="text" class="form-control" id="formFile" @bind="album.Descripcion">
+        </div>
+        <button type="submit" class="btn btn-primary">Actualizar album</button>
+        <button type="button" class="btn btn-danger" @onclick="@Cancel">Cancelar</button>
+    </EditForm>
+    <p></p>
+    <button type="button" class="btn btn-danger" @onclick="@EliminarAlbum">Eliminar album</button>
+}
+@code {
+    private IEnumerable<Album> albumes;
+
+    [Parameter]
+    public int _id { get; set; }
+
+    int SaltarFA = 0;
+    Cancion cancion = new Cancion();
+    Album album = new Album();
+    Usuario usuario = new Usuario();
+
+    protected override async Task OnInitializedAsync()
+    {
+        albumes = await AlbumService.AlbumList(SaltarFA);
+        if (_id != 0)
+        {
+            album = await AlbumService.AlbumDetails(_id);
+        }
+    }
+
+    async Task CargarCover(InputFileChangeEventArgs e)
+        {
+            var format = "image/png";
+            var resizedFile = await e.File.RequestImageFileAsync(format, 200, 200);
+            var buffer = new byte[resizedFile.Size];
+
+            await resizedFile.OpenReadStream().ReadAsync(buffer);
+            album.Cover_image = buffer;
+        }
+
+    protected async Task AlbumUpdate2()
+    {
+        await IAlbumService.AlbumUpdate2(album, _id);
+        NavigationManager.NavigateTo("/");
+    }
+
+    void Cancel()
+    {
+        NavigationManager.NavigateTo("/");
+    }
+
+    protected async Task EliminarAlbum(){
+        await IAlbumService.EliminarAlbum(_id);
+        NavigationManager.NavigateTo("/");
+    }
+
+
+}

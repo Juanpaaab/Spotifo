@@ -1,0 +1,79 @@
+@page "/Filtros/FiltrosCanciones"
+
+@using Spotifo.Data.Model
+@using Spotifo.Data.Service
+@using System.IO
+@using Microsoft.AspNetCore.Http
+@using Spotifo.Pages.Filtros
+@inject ICancionService ICancionService
+@inject IUsuarioService IUsuarioService
+@inject IAlbumService IAlbumService
+@inject IGeneroService GeneroService
+@inject NavigationManager NavigationManager
+
+<!--Filtro 2 -->
+
+<EditForm Model="@cancion" OnValidSubmit="@BuscarCancion">
+        <div class="mb-3">
+            <label for="formFile" class="form-label">Género de la canción</label>
+            @if (generos != null)
+                    {
+                        <select class="form-select form-control" aria-label=".form-select-lg example" @bind="cancion.Genero_ID">
+                            <option selected>Elija el genero</option>
+                            @foreach (var Genero in generos)
+                            {
+                                <option value="@Genero.ID_genero">@Genero.Genero_Nombre</option>
+                            }
+                        </select>
+                    }
+        </div>
+        <button type="submit" class="btn btn-primary">Buscar</button>
+        <button type="button" class="btn btn-danger" @onclick="@Cancel">Cancelar</button>
+</EditForm>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">Nombre de la cancion</th>
+            <th scope="col">Género de la canción</th>
+            <th scope="col">Fecha de publicación</th>
+            <th scope="col">Reproductor</th>
+        </tr>
+    </thead>
+    @if (canciones != null)
+    {
+        @foreach (var songs in canciones)
+        {
+            <tbody>
+                <tr>
+                    <a href="CancionDescripcionGeneral/@songs.ID_cancion" target="_blank" ><td>@songs.Nombre_cancion</td></a>
+                    <td>@songs.Nombre_Genero</td>
+                    <td>@songs.Fecha_publicacion_cancion</td>
+                    <td><audio controls="controls" id='@songs.Nombre_cancion' source src='/canciones/@songs.URL'></audio></td>
+                </tr>
+            </tbody>
+        }
+    }
+</table>
+
+@code {
+
+    Cancion cancion = new Cancion();
+    private IEnumerable<Cancion> canciones;
+    private IEnumerable<Genero> generos;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        generos = await GeneroService.GetGeneros();
+    }
+
+    protected async Task BuscarCancion()
+    {
+        canciones = await ICancionService.BusquedaGeneroC(cancion);
+    }
+
+    void Cancel()
+    {
+        NavigationManager.NavigateTo("/");
+    }
+}

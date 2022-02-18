@@ -1,0 +1,90 @@
+﻿@page "/AlbumAdd"
+
+@using Spotifo.Data.Model
+@using Spotifo.Data.Service
+@using Microsoft.AspNetCore.Http
+
+@inject IHttpContextAccessor httpContextAccessor
+
+@inject IAlbumService IAlbumService
+@inject IGeneroService GeneroService
+@inject NavigationManager NavigationManager
+
+@if (httpContextAccessor.HttpContext.User.Identity.Name == null)
+{
+    <h1>INICIA SESIÓN</h1>
+}
+else
+{
+    <h1>Añadir album</h1>
+    <EditForm Model="@album" OnValidSubmit="@AlbumAdd2">
+        <table>
+            <tr>
+                <td>Título del album:</td>
+                <td><input type="text" @bind="album.Titulo_album" /></td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="formFile" class="form-label">Género del album</label>
+                    @if (generos != null)
+                    {
+                        <select class="form-select form-control" aria-label=".form-select-lg example" @bind="album.Genero_ID">
+                            <option selected>Selecciona el género</option>
+                            @foreach (var Genero in generos)
+                            {
+                                <option value="@Genero.ID_genero">@Genero.Genero_Nombre</option>
+                            }
+                        </select>
+                    }
+                </td>
+            </tr>
+            <tr>
+                <td>Cover del Album::</td>
+                <td><InputFile OnChange="CargarCover"></InputFile></td>
+            </tr>
+            <tr>
+                <td>Fecha de publicación:</td>
+                <td><input type="date" @bind="album.Fecha_publicacion_album" /></td>
+            </tr>
+            <tr>
+                <td>Descripción:</td>
+                <td><input type="text" @bind="album.Descripcion" /></td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <input type="submit" value="Añadir album" />
+                    <input type="button" value="Cancelar" @onclick="@Cancel" />
+                </td>
+            </tr>
+        </table>
+</EditForm>
+}
+
+    @code {
+        private IEnumerable<Genero> generos;
+        Album album = new Album();
+        Genero genero = new Genero();
+        protected override async Task OnInitializedAsync()
+        {
+            generos = await GeneroService.GetGeneros();
+        }
+        protected async Task AlbumAdd2()
+        {
+            await IAlbumService.AlbumAdd2(album, genero);
+            NavigationManager.NavigateTo("/");
+        }
+        
+        async Task CargarCover(InputFileChangeEventArgs e)
+        {
+            var format = "image/png";
+            var resizedFile = await e.File.RequestImageFileAsync(format, 200, 200);
+            var buffer = new byte[resizedFile.Size];
+
+            await resizedFile.OpenReadStream().ReadAsync(buffer);
+            album.Cover_image = buffer;
+        }
+        void Cancel()
+        {
+            NavigationManager.NavigateTo("/");
+        }
+    }

@@ -1,0 +1,119 @@
+﻿@page "/CancionAdd"
+
+@using Spotifo.Data.Model
+@using Spotifo.Data.Service
+@using System.IO
+@using Microsoft.AspNetCore.Http
+
+@inject IHttpContextAccessor httpContextAccessor
+
+@inject ICancionService ICancionService
+@inject NavigationManager NavigationManager
+@inject IAlbumService AlbumService
+@inject IGeneroService GeneroService
+
+@if (httpContextAccessor.HttpContext.User.Identity.Name == null)
+{
+    <h1>INICIA SESIÓN</h1>
+}
+else
+{
+
+    <h1>Añadir canción</h1>
+
+    <EditForm Model="@cancion" OnValidSubmit="@CancionInsert">
+        <div class="mb-3">
+            <label for="formFile" class="form-label">Nombre de la canción</label>
+            <input type="text" class="form-control" id="formFile" @bind="cancion.Nombre_cancion">
+        </div>
+        <div class="mb-3">
+            <label for="formFile" class="form-label">Género de la canción</label>
+            @if (generos != null)
+            {
+                <select class="form-select form-control" aria-label=".form-select-lg example" @bind="cancion.Genero_ID">
+                    <option selected>Selecciona el género</option>
+                    @foreach (var Genero in generos)
+                    {
+                        <option value="@Genero.ID_genero">@Genero.Genero_Nombre</option>
+                    }
+                </select>
+            }
+        </div>
+        <div class="mb-3">
+            <label for="formFile" class="form-label">Fecha de publicación</label>
+            <input type="date" class="form-control" id="formFile" @bind="cancion.Fecha_publicacion_cancion">
+        </div>
+        <div class="mb-3">
+            <label for="formFile" class="form-label">Sube la canción</label>
+            <InputFile OnChange="CargarCancion" type="file" class="form-control">Subir Canción</InputFile>
+        </div>
+        <div class="mb-3">
+            <label for="formFile" class="form-label">Elije el álbum</label>
+            @if (albumes != null)
+            {
+                <select class="form-select form-control" aria-label=".form-select-lg example" @bind="album.Titulo_album">
+
+                    <option selected>Elija el album al que pertenece</option>
+                    @foreach (var Album in albumes)
+                    {
+                        <option value="@Album.Titulo_album">@Album.Titulo_album</option>
+                    }
+
+
+                </select>
+            }
+        </div>
+
+        <button type="submit" class="btn btn-primary">Añadir canción</button>
+        <button type="button" class="btn btn-danger" @onclick="@Cancel">Cancelar</button>
+
+
+
+    </EditForm>
+}
+
+@code {
+
+    private IEnumerable<Album> albumes;
+    private IEnumerable<Genero> generos;
+    Cancion cancion = new Cancion();
+
+    Album album = new Album();
+    Usuario usuario = new Usuario();
+    Genero genero = new Genero();
+
+    protected override async Task OnInitializedAsync()
+    {
+        albumes = await AlbumService.AlbumListPersonal();
+        generos = await GeneroService.GetGeneros();
+    }
+
+    protected async Task CancionInsert()
+    {
+        await ICancionService.CancionInsert(cancion, album, usuario, genero);
+
+        NavigationManager.NavigateTo("/");
+    }
+
+    async Task CargarCancion(InputFileChangeEventArgs e)
+    {
+        var folderName = Path.Combine("wwwroot", "canciones");
+        var pathToSave = Path.Combine(Directory.GetCurrentDirectory(), folderName);
+        var fullPath = Path.Combine(pathToSave, e.File.Name.Replace(" ", "-"));
+
+        cancion.Extension = e.File.Name.Substring(e.File.Name.Count() - 3, 3);
+        cancion.URL = e.File.Name.Replace(" ", "-");
+
+        using (var ms = new MemoryStream())
+        {
+            var maxAllowedSize = 500000000;
+            await e.File.OpenReadStream(maxAllowedSize).CopyToAsync(ms);
+            await File.WriteAllBytesAsync(fullPath, ms.ToArray());
+        }
+    }
+
+    void Cancel()
+    {
+        NavigationManager.NavigateTo("/");
+    }
+}

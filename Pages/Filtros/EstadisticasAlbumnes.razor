@@ -1,0 +1,71 @@
+@page "/Filtros/EstadisticasAlbumnes"
+
+@using Spotifo.Data.Model
+@using Spotifo.Data.Service
+@using Microsoft.AspNetCore.Http
+
+@inject IHttpContextAccessor httpContextAccessor
+
+@inject IAlbumService IAlbumService
+@inject IAlbumService AlbumService
+@inject NavigationManager NavigationManager
+
+<EditForm Model="@usuario" OnValidSubmit="@TraerAlbumnesUsuario">
+    <table>
+        <tr>
+            <td>Nombre del cantante:</td>
+            <td><input type="text" @bind="usuario.Nombre_usuario" /></td>
+        </tr>
+        <tr>
+            <td>Apellido del cantante:</td>
+            <td><input type="text" @bind="usuario.Apellido_usuario" /></td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <input type="submit" value="Buscar" />
+                <input type="button" value="Cancelar" @onclick="@Cancel" />
+            </td>
+        </tr>
+    </table>
+</EditForm>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">Nombre del album</th>
+            <th scope="col">Género del album</th>
+            <th scope="col">Fecha de publicación:</th>
+            <th scope="col">Me gustas:</th>
+        </tr>
+    </thead>
+    @if (albumnes != null)
+    {
+        @foreach (var albums in albumnes)
+        {
+            <tbody>
+                <tr>
+                    <a href="CancionDescripcionGeneral/@albums.ID_album" target="_blank" ><td>@albums.Titulo_album</td></a>
+                    <td>@albums.Nombre_Genero</td>
+                    <td>@albums.Fecha_publicacion_album</td>
+                    <td>@albums.Favoritos</td>
+                </tr>
+            </tbody>
+        }
+    }
+</table>
+
+@code {
+        private IEnumerable<Album> albumnes;
+
+        Usuario usuario = new Usuario();
+
+        protected async Task TraerAlbumnesUsuario()
+        {
+            albumnes = await IAlbumService.TraerAlbumnesUsuario(usuario);
+        }
+
+        void Cancel()
+    {
+        NavigationManager.NavigateTo("/");
+    }
+}

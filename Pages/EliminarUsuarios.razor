@@ -1,0 +1,54 @@
+@page "/EliminarUsuarios"
+
+@using Spotifo.Data.Model
+@using Spotifo.Data.Service
+
+@inject IUsuarioService UsuarioService
+@inject IUsuarioService IUsuarioService
+@inject ICancionService CancionService
+@inject ICancionService ICancionService
+@inject IAlbumService AlbumService
+@inject IAlbumService IAlbumService
+
+<h3>Lista de Usuarios</h3>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">Nombre</th>
+            <th scope="col">Apellido</th>
+            <th scope="col">E-mail</th>
+        </tr>
+    </thead>
+    @if (usuarios == null)
+    {
+
+    }
+    else
+    {
+        @foreach (var user in usuarios)
+        {
+            <tbody>
+                <tr>
+
+                    <td>@user.Nombre_usuario</td>
+                    <td>@user.Apellido_usuario</td>
+                    <td>@user.Email</td>
+                    <td><a href="UsuarioDescripcion/@user.ID_usuario">Eliminar Usuario</a></td>
+                </tr>
+            </tbody>
+        }
+    }
+</table>
+<p></p>
+@code {
+    IEnumerable<Usuario> usuarios;
+    Usuario usuario = new Usuario();
+
+    protected override async Task OnInitializedAsync()
+    {
+        usuarios = await UsuarioService.GetUsuarios();
+    }
+   
+
+}

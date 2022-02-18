@@ -1,0 +1,45 @@
+@page "/CancionesFamosas"
+
+@using Spotifo.Data.Model
+@using Spotifo.Data.Service
+@using System.IO
+@using Microsoft.AspNetCore.Http
+
+@inject ICancionService ICancionService
+@inject ICancionService CancionService
+@inject NavigationManager NavigationManager
+
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">Nombre de la cancion</th>
+            <th scope="col">Género de la canción</th>
+            <th scope="col">Fecha de publicación</th>
+            <th scope="col">Veces reproducida</th>
+            <th scope="col">Reproductor</th>
+        </tr>
+    </thead>
+    @if(canciones != null)
+    {
+        @foreach (var songs in canciones)
+        {
+            <tbody>
+                <tr>
+                    <a href="CancionDescripcionGeneral/@songs.ID_cancion" target="_blank"><td>@songs.Nombre_cancion</td></a>
+                    <td>@songs.Nombre_Genero</td>
+                    <td>@songs.Fecha_publicacion_cancion</td>
+                    <td>@songs.Vistas</td>
+                    <td><audio controls="controls" id='@songs.Nombre_cancion' source src='/canciones/@songs.URL'></audio></td>
+                </tr>
+            </tbody>
+        }
+    }
+</table>
+
+@code {
+    private IEnumerable<Cancion> canciones;
+    protected override async Task OnInitializedAsync()
+    {
+        canciones = await CancionService.CancionesFamosas();
+    }
+}
